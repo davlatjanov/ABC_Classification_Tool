@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Slotting Strategy Tool</title>
+    <style>
+      /* Reset & base */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f9fafb;
+        margin: 0;
+        padding: 30px;
+        color: #333;
+      }
+
+      h1 {
+        text-align: center;
+        font-weight: 700;
+        font-size: 2.8rem;
+        color: #222;
+        margin-bottom: 1rem;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 25px 30px 35px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 1rem;
+        display: block;
+        margin-bottom: 6px;
+        color: #444;
+      }
+
+      input[type="file"],
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 1rem;
+        border: 1.8px solid #d1d5db;
+        border-radius: 8px;
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="file"]:focus,
+      input[type="text"]:focus {
+        border-color: #2563eb;
+        outline: none;
+      }
+
+      .slider-container {
+        margin: 25px 0;
+      }
+
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 6px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        -webkit-appearance: none;
+        appearance: none;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        background: #2563eb;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
+        transition: background-color 0.3s ease;
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        background: #1e40af;
+      }
+      input[type="range"]:focus::-webkit-slider-thumb {
+        outline: 2px solid #1e40af;
+      }
+
+      .buttons {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      button {
+        background: #2563eb;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 12px 28px;
+        margin: 0 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      button:hover {
+        background: #1e40af;
+        box-shadow: 0 8px 25px rgba(30, 64, 175, 0.5);
+      }
+      button:disabled {
+        background: #a5b4fc;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      /* Error message */
+      #error-msg {
+        color: #dc2626;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      /* Visualization grid */
+      #visualization {
+        display: grid;
+        margin: 30px 0 40px;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+        user-select: none;
+      }
+
+      .cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid #e0e7ff;
+        background: #fefefe;
+        color: #374151;
+        position: relative;
+        border-radius: 6px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .cell:hover {
+        background-color: #eff6ff;
+      }
+
+      /* Dock cell */
+      .dock-cell {
+        background-color: #2563eb;
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+      }
+
+      /* Obstacle cell */
+      .obstacle-cell {
+        background-color: #ef4444;
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+      }
+
+      /* SKU classes with soft pastel backgrounds */
+      .class-A {
+        background-color: #fee2e2;
+        color: #b91c1c;
+      }
+      .class-B {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+      .class-C {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      /* Tooltip for SKU cells */
+      .tooltip {
+        visibility: hidden;
+        background-color: #111827dd;
+        color: #f9fafb;
+        text-align: center;
+        padding: 6px 10px;
+        border-radius: 8px;
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        z-index: 10;
+      }
+      .cell:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Results table */
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 14px 18px;
+      }
+      thead tr {
+        background-color: #2563eb;
+        color: white;
+        border-radius: 12px;
+      }
+      tbody tr {
+        background: #f9fafb;
+        border-radius: 12px;
+        transition: background-color 0.3s ease;
+      }
+      tbody tr:hover {
+        background-color: #e0e7ff;
+      }
+
+      /* Summary stats */
+      #summary-stats {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #374151;
+      }
+
+      #summary-stats span {
+        background: #f3f4f6;
+        padding: 10px 18px;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Chart container */
+      #bar-chart {
+        max-width: 480px;
+        margin: 30px auto 0;
+      }
+
+      /* Responsive tweaks */
+      @media (max-width: 640px) {
+        .container {
+          padding: 20px;
+        }
+        #summary-stats {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Slotting Strategy Tool</h1>
+
+      <label for="csv-file">Upload Frequency CSV (rows, aisles):</label>
+      <input type="file" id="csv-file" accept=".csv" />
+
+      <label for="dock-location">Dock Location (row,col):</label>
+      <input
+        type="text"
+        id="dock-location"
+        placeholder="e.g. 0,0"
+        value="0,0"
+      />
+
+      <label for="obstacle-location"
+        >Obstacle Locations (row,col; multiple separated by semicolon):</label
+      >
+      <input type="text" id="obstacle-location" placeholder="e.g. 1,2;2,3" />
+
+      <div class="slider-container">
+        <div class="slider-label">
+          <label for="classA-threshold">Class A Threshold (%)</label>
+          <span id="classA-value">20%</span>
+        </div>
+        <input
+          type="range"
+          id="classA-threshold"
+          min="0"
+          max="100"
+          value="20"
+          step="1"
+        />
+      </div>
+      <div class="slider-container">
+        <div class="slider-label">
+          <label for="classB-threshold">Class B Threshold (%)</label>
+          <span id="classB-value">30%</span>
+        </div>
+        <input
+          type="range"
+          id="classB-threshold"
+          min="0"
+          max="100"
+          value="30"
+          step="1"
+        />
+      </div>
+
+      <div class="buttons">
+        <button id="process-btn" disabled>Process Slotting</button>
+        <button id="reset-btn" type="button">Reset</button>
+      </div>
+
+      <div id="error-msg"></div>
+
+      <div id="visualization"></div>
+
+      <div id="summary-stats"></div>
+
+      <table id="results-table" style="display: none">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Position (Row,Col)</th>
+            <th>Frequency</th>
+            <th>Class</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("csv-file");
+      const dockInput = document.getElementById("dock-location");
+      const obstacleInput = document.getElementById("obstacle-location");
+      const processBtn = document.getElementById("process-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const errorMsg = document.getElementById("error-msg");
+      const visualization = document.getElementById("visualization");
+      const resultsTable = document.getElementById("results-table");
+      const resultsBody = resultsTable.querySelector("tbody");
+      const summaryStats = document.getElementById("summary-stats");
+
+      const classASlider = document.getElementById("classA-threshold");
+      const classBSlider = document.getElementById("classB-threshold");
+      const classAValue = document.getElementById("classA-value");
+      const classBValue = document.getElementById("classB-value");
+
+      classASlider.addEventListener("input", () => {
+        classAValue.textContent = `${classASlider.value}%`;
+      });
+      classBSlider.addEventListener("input", () => {
+        classBValue.textContent = `${classBSlider.value}%`;
+      });
+
+      let frequencyGrid = [];
+      let rows = 0;
+      let cols = 0;
+      let dockLocation = [0, 0];
+      let obstacles = [];
+
+      fileInput.addEventListener("change", handleFileUpload);
+      processBtn.addEventListener("click", processSlotting);
+      resetBtn.addEventListener("click", resetAll);
+
+      function resetAll() {
+        frequencyGrid = [];
+        rows = 0;
+        cols = 0;
+        dockLocation = [0, 0];
+        obstacles = [];
+        visualization.innerHTML = "";
+        resultsBody.innerHTML = "";
+        summaryStats.innerHTML = "";
+        resultsTable.style.display = "none";
+        errorMsg.textContent = "";
+        processBtn.disabled = true;
+        fileInput.value = "";
+        dockInput.value = "0,0";
+        obstacleInput.value = "";
+        classASlider.value = 20;
+        classBSlider.value = 30;
+        classAValue.textContent = "20%";
+        classBValue.textContent = "30%";
+      }
+
+      function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result.trim();
+          parseCSV(text);
+        };
+        reader.readAsText(file);
+      }
+
+      function parseCSV(text) {
+        const lines = text
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0);
+        frequencyGrid = lines.map((line) => {
+          return line.split(",").map((s) => {
+            const num = parseFloat(s);
+            return isNaN(num) ? 0 : num;
+          });
+        });
+
+        rows = frequencyGrid.length;
+        cols = frequencyGrid[0]?.length || 0;
+
+        // Validate grid consistency
+        for (const row of frequencyGrid) {
+          if (row.length !== cols) {
+            errorMsg.textContent =
+              "Error: CSV rows have inconsistent number of columns.";
+            processBtn.disabled = true;
+            return;
+          }
+        }
+
+        errorMsg.textContent = "";
+        processBtn.disabled = false;
+        visualization.innerHTML = "";
+        resultsBody.innerHTML = "";
+        summaryStats.innerHTML = "";
+        resultsTable.style.display = "none";
+      }
+
+      function parseCoordinates(input) {
+        return input
+          .split(";")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+          .map((coord) => {
+            const [r, c] = coord.split(",").map((x) => parseInt(x.trim(), 10));
+            return [r, c];
+          });
+      }
+
+      function processSlotting() {
+        errorMsg.textContent = "";
+
+        // Parse dock location
+        const dockStr = dockInput.value.trim();
+        const dockCoords = dockStr
+          .split(",")
+          .map((x) => parseInt(x.trim(), 10));
+        if (dockCoords.length !== 2 || dockCoords.some(isNaN)) {
+          errorMsg.textContent = "Dock location must be in format row,col";
+          return;
+        }
+        if (
+          dockCoords[0] < 0 ||
+          dockCoords[0] >= rows ||
+          dockCoords[1] < 0 ||
+          dockCoords[1] >= cols
+        ) {
+          errorMsg.textContent = "Dock location out of bounds";
+          return;
+        }
+        dockLocation = dockCoords;
+
+        // Parse obstacles
+        obstacles = [];
+        if (obstacleInput.value.trim() !== "") {
+          obstacles = parseCoordinates(obstacleInput.value);
+          for (const [r, c] of obstacles) {
+            if (r < 0 || r >= rows || c < 0 || c >= cols) {
+              errorMsg.textContent = "One or more obstacles are out of bounds";
+              return;
+            }
+          }
+        }
+
+        // Get thresholds and validate
+        const AThreshold = Number(classASlider.value);
+        const BThreshold = Number(classBSlider.value);
+
+        if (AThreshold + BThreshold > 100) {
+          errorMsg.textContent =
+            "Class A + Class B thresholds cannot exceed 100%";
+          return;
+        }
+
+        // Flatten grid to SKU list
+        let skus = [];
+        let skuCount = 0;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            skus.push({
+              sku: `SKU${skuCount}`,
+              row: r,
+              col: c,
+              freq: frequencyGrid[r][c],
+            });
+            skuCount++;
+          }
+        }
+
+        // Remove obstacle SKUs (treat as unavailable)
+        skus = skus.filter(
+          (sku) =>
+            !obstacles.some(([or, oc]) => or === sku.row && oc === sku.col)
+        );
+
+        // Sort SKUs descending by frequency
+        skus.sort((a, b) => b.freq - a.freq);
+
+        // Calculate cumulative % for Paretto
+        const totalFreq = skus.reduce((acc, s) => acc + s.freq, 0);
+        let cumFreq = 0;
+        skus.forEach((sku) => {
+          cumFreq += sku.freq;
+          sku.cumPct = totalFreq ? (cumFreq / totalFreq) * 100 : 0;
+        });
+
+        // Assign classes by cumulative %
+        skus.forEach((sku) => {
+          if (sku.cumPct <= AThreshold) sku.class = "A";
+          else if (sku.cumPct <= AThreshold + BThreshold) sku.class = "B";
+          else sku.class = "C";
+        });
+
+        // Assign slots (naive assignment here: A slots closer to dock, C farthest)
+        // Calculate Manhattan distance from dock for each position
+        skus.forEach((sku) => {
+          sku.distFromDock =
+            Math.abs(sku.row - dockLocation[0]) +
+            Math.abs(sku.col - dockLocation[1]);
+        });
+
+        // Sort SKUs by class priority and assign slots (just to keep order)
+        // For demo: we keep original positions but highlight classes.
+
+        renderGrid(skus);
+        renderResults(skus, totalFreq);
+      }
+
+      function renderGrid(skus) {
+        visualization.innerHTML = "";
+
+        visualization.style.gridTemplateRows = `repeat(${rows}, 40px)`;
+        visualization.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+
+        // Build quick lookup by position
+        const skuMap = new Map();
+        for (const sku of skus) {
+          skuMap.set(`${sku.row},${sku.col}`, sku);
+        }
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell");
+
+            // Dock cell
+            if (r === dockLocation[0] && c === dockLocation[1]) {
+              cell.classList.add("dock-cell");
+              cell.textContent = "Dock";
+              visualization.appendChild(cell);
+              continue;
+            }
+
+            // Obstacle cell
+            if (obstacles.some(([or, oc]) => or === r && oc === c)) {
+              cell.classList.add("obstacle-cell");
+              cell.textContent = "X";
+              visualization.appendChild(cell);
+              continue;
+            }
+
+            const sku = skuMap.get(`${r},${c}`);
+
+            if (sku) {
+              // Add class-based styling
+              if (sku.class === "A") cell.classList.add("class-A");
+              else if (sku.class === "B") cell.classList.add("class-B");
+              else cell.classList.add("class-C");
+
+              cell.textContent = sku.sku;
+
+              // Tooltip with details
+              const tip = document.createElement("span");
+              tip.className = "tooltip";
+              tip.textContent = `Freq: ${sku.freq} | Class: ${sku.class} | Pos: (${sku.row},${sku.col})`;
+              cell.appendChild(tip);
+            } else {
+              cell.textContent = "";
+            }
+
+            visualization.appendChild(cell);
+          }
+        }
+      }
+
+      function renderResults(skus, totalFreq) {
+        resultsBody.innerHTML = "";
+        const counts = { A: 0, B: 0, C: 0 };
+        let freqA = 0,
+          freqB = 0,
+          freqC = 0;
+
+        skus.forEach((sku) => {
+          const tr = document.createElement("tr");
+
+          const tdSKU = document.createElement("td");
+          tdSKU.textContent = sku.sku;
+          tr.appendChild(tdSKU);
+
+          const tdPos = document.createElement("td");
+          tdPos.textContent = `(${sku.row},${sku.col})`;
+          tr.appendChild(tdPos);
+
+          const tdFreq = document.createElement("td");
+          tdFreq.textContent = sku.freq;
+          tr.appendChild(tdFreq);
+
+          const tdClass = document.createElement("td");
+          tdClass.textContent = sku.class;
+          tr.appendChild(tdClass);
+
+          resultsBody.appendChild(tr);
+
+          counts[sku.class]++;
+          if (sku.class === "A") freqA += sku.freq;
+          else if (sku.class === "B") freqB += sku.freq;
+          else freqC += sku.freq;
+        });
+
+        resultsTable.style.display = "table";
+
+        summaryStats.innerHTML = `
+      <span>Class A: ${counts.A} SKUs (${((freqA / totalFreq) * 100).toFixed(
+          1
+        )}% freq)</span>
+      <span>Class B: ${counts.B} SKUs (${((freqB / totalFreq) * 100).toFixed(
+          1
+        )}% freq)</span>
+      <span>Class C: ${counts.C} SKUs (${((freqC / totalFreq) * 100).toFixed(
+          1
+        )}% freq)</span>
+      <span>Total SKUs: ${skus.length}</span>
+    `;
+      }
+    </script>
+  </body>
+</html>
