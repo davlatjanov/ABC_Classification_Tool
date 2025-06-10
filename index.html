@@ -2,400 +2,371 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Slotting Strategy Tool</title>
+    <title>Slotting Strategy Tool (CSV Robust)</title>
     <style>
-      /* Reset & base */
+      /* ... (same CSS as before, omitted for brevity, copy from previous answer) ... */
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: #f9fafb;
+        font-family: Arial, sans-serif;
+        background: #f3f6fa;
         margin: 0;
-        padding: 30px;
-        color: #333;
+        padding: 20px;
       }
-
-      h1 {
-        text-align: center;
-        font-weight: 700;
-        font-size: 2.8rem;
-        color: #222;
-        margin-bottom: 1rem;
-      }
-
-      .container {
-        max-width: 960px;
-        margin: 0 auto;
+      .main-container {
+        max-width: 1200px;
+        margin: auto;
         background: #fff;
-        padding: 25px 30px 35px;
+        border-radius: 14px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.09);
+        padding: 30px;
+      }
+      .header {
+        background: #2563eb;
+        color: #fff;
         border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        padding: 20px 0;
+        text-align: center;
       }
-
+      .container {
+        margin-top: 20px;
+      }
+      .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 20px;
+      }
+      .control-group {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 18px;
+      }
       label {
-        font-weight: 600;
-        font-size: 1rem;
-        display: block;
-        margin-bottom: 6px;
-        color: #444;
+        font-weight: bold;
       }
-
       input[type="file"],
       input[type="text"] {
         width: 100%;
-        padding: 10px 14px;
-        font-size: 1rem;
-        border: 1.8px solid #d1d5db;
-        border-radius: 8px;
-        transition: border-color 0.3s ease;
+        padding: 10px;
+        margin-top: 6px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
       }
-
-      input[type="file"]:focus,
-      input[type="text"]:focus {
-        border-color: #2563eb;
-        outline: none;
+      small {
+        color: #6b7280;
       }
-
       .slider-container {
-        margin: 25px 0;
+        margin-top: 12px;
       }
-
-      .slider-label {
-        display: flex;
-        justify-content: space-between;
-        font-weight: 600;
-        font-size: 1rem;
-        margin-bottom: 6px;
-      }
-
       input[type="range"] {
         width: 100%;
-        height: 6px;
-        background: #e5e7eb;
-        border-radius: 10px;
-        -webkit-appearance: none;
-        appearance: none;
-        cursor: pointer;
       }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 22px;
-        height: 22px;
-        background: #2563eb;
-        border-radius: 50%;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
-        transition: background-color 0.3s ease;
-      }
-      input[type="range"]::-webkit-slider-thumb:hover {
-        background: #1e40af;
-      }
-      input[type="range"]:focus::-webkit-slider-thumb {
-        outline: 2px solid #1e40af;
-      }
-
       .buttons {
+        margin: 20px 0;
         text-align: center;
-        margin: 30px 0;
       }
-
       button {
         background: #2563eb;
         color: #fff;
-        font-size: 1.1rem;
-        font-weight: 600;
-        padding: 12px 28px;
-        margin: 0 12px;
         border: none;
-        border-radius: 10px;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-size: 1rem;
+        margin-right: 10px;
         cursor: pointer;
-        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
       }
-      button:hover {
-        background: #1e40af;
-        box-shadow: 0 8px 25px rgba(30, 64, 175, 0.5);
+      button.secondary {
+        background: #6b7280;
       }
       button:disabled {
         background: #a5b4fc;
-        cursor: not-allowed;
-        box-shadow: none;
       }
-
-      /* Error message */
-      #error-msg {
-        color: #dc2626;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 18px;
-      }
-
-      /* Visualization grid */
-      #visualization {
+      .visualization-container {
         display: grid;
-        margin: 30px 0 40px;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
-        user-select: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 30px 0;
       }
-
+      .viz-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 18px;
+      }
+      .viz-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      #visualization-before,
+      #visualization-after {
+        display: grid;
+        gap: 0;
+      }
       .cell {
+        border: 1px solid #e5e7eb;
+        min-width: 40px;
+        min-height: 30px;
         display: flex;
-        justify-content: center;
         align-items: center;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid #e0e7ff;
-        background: #fefefe;
-        color: #374151;
-        position: relative;
-        border-radius: 6px;
-        transition: background-color 0.3s ease, color 0.3s ease;
+        justify-content: center;
+        font-size: 0.8rem;
       }
-      .cell:hover {
-        background-color: #eff6ff;
-      }
-
-      /* Dock cell */
       .dock-cell {
-        background-color: #2563eb;
-        color: white;
-        font-weight: 700;
-        font-size: 0.9rem;
-        border: none;
+        background: #059669;
+        color: #fff;
       }
-
-      /* Obstacle cell */
       .obstacle-cell {
-        background-color: #ef4444;
-        color: white;
-        font-weight: 700;
-        font-size: 1rem;
-        border: none;
+        background: #dc2626;
+        color: #fff;
       }
-
-      /* SKU classes with soft pastel backgrounds */
       .class-A {
-        background-color: #fee2e2;
-        color: #b91c1c;
+        background: #fecaca;
       }
       .class-B {
-        background-color: #fef3c7;
-        color: #92400e;
+        background: #fdba74;
       }
       .class-C {
-        background-color: #d1fae5;
-        color: #065f46;
+        background: #bbf7d0;
       }
-
-      /* Tooltip for SKU cells */
-      .tooltip {
-        visibility: hidden;
-        background-color: #111827dd;
-        color: #f9fafb;
-        text-align: center;
-        padding: 6px 10px;
-        border-radius: 8px;
-        position: absolute;
-        bottom: 110%;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.75rem;
-        font-weight: 600;
-        white-space: nowrap;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.25s ease;
-        z-index: 10;
-      }
-      .cell:hover .tooltip {
-        visibility: visible;
-        opacity: 1;
-      }
-
-      /* Results table */
-      table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 12px;
-        font-size: 0.9rem;
-        margin-bottom: 20px;
-      }
-      th,
-      td {
-        text-align: left;
-        padding: 14px 18px;
-      }
-      thead tr {
-        background-color: #2563eb;
-        color: white;
-        border-radius: 12px;
-      }
-      tbody tr {
-        background: #f9fafb;
-        border-radius: 12px;
-        transition: background-color 0.3s ease;
-      }
-      tbody tr:hover {
-        background-color: #e0e7ff;
-      }
-
-      /* Summary stats */
-      #summary-stats {
+      .legend {
         display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        gap: 20px;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #374151;
+        gap: 15px;
+        margin: 10px 0;
       }
-
-      #summary-stats span {
-        background: #f3f4f6;
-        padding: 10px 18px;
-        border-radius: 10px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
-
-      /* Chart container */
-      #bar-chart {
-        max-width: 480px;
-        margin: 30px auto 0;
+      .legend-color {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 1px solid #374151;
       }
-
-      /* Responsive tweaks */
-      @media (max-width: 640px) {
-        .container {
-          padding: 20px;
-        }
-        #summary-stats {
-          flex-direction: column;
-          align-items: center;
+      #error-msg {
+        color: #dc2626;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      .results-section {
+        margin-top: 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 18px;
+      }
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+      }
+      .metric-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 14px;
+        text-align: center;
+      }
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2563eb;
+      }
+      .improvement {
+        color: #059669;
+      }
+      .improvement.negative {
+        color: #dc2626;
+      }
+      @media (max-width: 900px) {
+        .visualization-container {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Slotting Strategy Tool</h1>
-
-      <label for="csv-file">Upload Frequency CSV (rows, aisles):</label>
-      <input type="file" id="csv-file" accept=".csv" />
-
-      <label for="dock-location">Dock Location (row,col):</label>
-      <input
-        type="text"
-        id="dock-location"
-        placeholder="e.g. 0,0"
-        value="0,0"
-      />
-
-      <label for="obstacle-location"
-        >Obstacle Locations (row,col; multiple separated by semicolon):</label
-      >
-      <input type="text" id="obstacle-location" placeholder="e.g. 1,2;2,3" />
-
-      <div class="slider-container">
-        <div class="slider-label">
-          <label for="classA-threshold">Class A Threshold (%)</label>
-          <span id="classA-value">20%</span>
+    <div class="main-container">
+      <div class="header">
+        <h1>Slotting Strategy Tool</h1>
+        <p>Upload your CSV, set dock/obstacles, and optimize!</p>
+      </div>
+      <div class="container">
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="csv-file">Upload Frequency CSV</label>
+            <input type="file" id="csv-file" accept=".csv" />
+            <small>Grid format: rows × columns with pick frequencies</small>
+          </div>
+          <div class="control-group">
+            <label for="dock-location">Dock Location (row,col)</label>
+            <input
+              type="text"
+              id="dock-location"
+              placeholder="e.g. 0,0"
+              value="0,0"
+            />
+            <small>Starting point for distance calculations</small>
+          </div>
+          <div class="control-group">
+            <label for="obstacle-location">Obstacle Locations</label>
+            <input
+              type="text"
+              id="obstacle-location"
+              placeholder="e.g. 1,2;2,3"
+            />
+            <small>Separate multiple locations with semicolons</small>
+          </div>
         </div>
-        <input
-          type="range"
-          id="classA-threshold"
-          min="0"
-          max="100"
-          value="20"
-          step="1"
-        />
-      </div>
-      <div class="slider-container">
-        <div class="slider-label">
-          <label for="classB-threshold">Class B Threshold (%)</label>
-          <span id="classB-value">30%</span>
+        <div class="controls-grid">
+          <div class="control-group">
+            <div class="slider-container">
+              <label for="classA-threshold"
+                >Class A Threshold (%) <span id="classA-value">20%</span></label
+              >
+              <input
+                type="range"
+                id="classA-threshold"
+                min="5"
+                max="50"
+                value="20"
+                step="1"
+              />
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="slider-container">
+              <label for="classB-threshold"
+                >Class B Threshold (%) <span id="classB-value">30%</span></label
+              >
+              <input
+                type="range"
+                id="classB-threshold"
+                min="10"
+                max="60"
+                value="30"
+                step="1"
+              />
+            </div>
+          </div>
         </div>
-        <input
-          type="range"
-          id="classB-threshold"
-          min="0"
-          max="100"
-          value="30"
-          step="1"
-        />
+        <div class="buttons">
+          <button id="process-btn" disabled>Optimize Slotting</button>
+          <button id="reset-btn" class="secondary">Reset All</button>
+        </div>
+        <div id="error-msg"></div>
+        <div class="legend" id="legend" style="display: none">
+          <div class="legend-item">
+            <div class="legend-color dock-cell"></div>
+            <span>Dock</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color obstacle-cell"></div>
+            <span>Obstacle</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color class-A"></div>
+            <span>Class A</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color class-B"></div>
+            <span>Class B</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color class-C"></div>
+            <span>Class C</span>
+          </div>
+        </div>
+        <div
+          class="visualization-container"
+          id="viz-container"
+          style="display: none"
+        >
+          <div class="viz-section">
+            <div class="viz-title">Original Layout</div>
+            <div id="visualization-before"></div>
+          </div>
+          <div class="viz-section">
+            <div class="viz-title">Optimized Layout</div>
+            <div id="visualization-after"></div>
+          </div>
+        </div>
+        <div class="results-section" id="results-section" style="display: none">
+          <h2>Performance Metrics</h2>
+          <div class="metrics-grid" id="metrics-grid"></div>
+          <h3>Placement Explanations</h3>
+          <div id="explanations"></div>
+        </div>
       </div>
-
-      <div class="buttons">
-        <button id="process-btn" disabled>Process Slotting</button>
-        <button id="reset-btn" type="button">Reset</button>
-      </div>
-
-      <div id="error-msg"></div>
-
-      <div id="visualization"></div>
-
-      <div id="summary-stats"></div>
-
-      <table id="results-table" style="display: none">
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Position (Row,Col)</th>
-            <th>Frequency</th>
-            <th>Class</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
     </div>
-
     <script>
+      // Elements
       const fileInput = document.getElementById("csv-file");
       const dockInput = document.getElementById("dock-location");
       const obstacleInput = document.getElementById("obstacle-location");
       const processBtn = document.getElementById("process-btn");
       const resetBtn = document.getElementById("reset-btn");
       const errorMsg = document.getElementById("error-msg");
-      const visualization = document.getElementById("visualization");
-      const resultsTable = document.getElementById("results-table");
-      const resultsBody = resultsTable.querySelector("tbody");
-      const summaryStats = document.getElementById("summary-stats");
-
-      const classASlider = document.getElementById("classA-threshold");
-      const classBSlider = document.getElementById("classB-threshold");
+      const vizContainer = document.getElementById("viz-container");
+      const visualizationBefore = document.getElementById(
+        "visualization-before"
+      );
+      const visualizationAfter = document.getElementById("visualization-after");
+      const resultsSection = document.getElementById("results-section");
+      const metricsGrid = document.getElementById("metrics-grid");
+      const explanationsDiv = document.getElementById("explanations");
+      const legend = document.getElementById("legend");
       const classAValue = document.getElementById("classA-value");
       const classBValue = document.getElementById("classB-value");
+      const classASlider = document.getElementById("classA-threshold");
+      const classBSlider = document.getElementById("classB-threshold");
 
+      // Data
+      let originalGrid = [];
+      let optimizedGrid = [];
+      let skuList = [];
+      let dockLoc = { row: 0, col: 0 };
+      let obstacles = [];
+      let nRows = 0,
+        nCols = 0;
+
+      // UI Handlers
       classASlider.addEventListener("input", () => {
-        classAValue.textContent = `${classASlider.value}%`;
+        classAValue.textContent = classASlider.value + "%";
       });
       classBSlider.addEventListener("input", () => {
-        classBValue.textContent = `${classBSlider.value}%`;
+        classBValue.textContent = classBSlider.value + "%";
       });
 
-      let frequencyGrid = [];
-      let rows = 0;
-      let cols = 0;
-      let dockLocation = [0, 0];
-      let obstacles = [];
+      fileInput.addEventListener("change", (e) => {
+        errorMsg.style.display = "none";
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            originalGrid = parseCSV(evt.target.result);
+            nRows = originalGrid.length;
+            nCols = originalGrid[0].length;
+            visualizeGrid(originalGrid, visualizationBefore, null, []);
+            processBtn.disabled = false;
+          } catch (err) {
+            showError("Invalid CSV file format.");
+          }
+        };
+        reader.readAsText(file);
+      });
 
-      fileInput.addEventListener("change", handleFileUpload);
-      processBtn.addEventListener("click", processSlotting);
-      resetBtn.addEventListener("click", resetAll);
+      processBtn.addEventListener("click", () => {
+        errorMsg.style.display = "none";
+        try {
+          dockLoc = parseLoc(dockInput.value);
+          obstacles = parseObstacles(obstacleInput.value);
+          if (!originalGrid.length) throw new Error("No CSV data loaded.");
+          runOptimization();
+        } catch (err) {
+          showError(err.message);
+        }
+      });
 
-      function resetAll() {
-        frequencyGrid = [];
-        rows = 0;
-        cols = 0;
-        dockLocation = [0, 0];
-        obstacles = [];
-        visualization.innerHTML = "";
-        resultsBody.innerHTML = "";
-        summaryStats.innerHTML = "";
-        resultsTable.style.display = "none";
-        errorMsg.textContent = "";
-        processBtn.disabled = true;
+      resetBtn.addEventListener("click", () => {
         fileInput.value = "";
         dockInput.value = "0,0";
         obstacleInput.value = "";
@@ -403,268 +374,290 @@
         classBSlider.value = 30;
         classAValue.textContent = "20%";
         classBValue.textContent = "30%";
+        errorMsg.style.display = "none";
+        vizContainer.style.display = "none";
+        resultsSection.style.display = "none";
+        legend.style.display = "none";
+        visualizationBefore.innerHTML = "";
+        visualizationAfter.innerHTML = "";
+        metricsGrid.innerHTML = "";
+        explanationsDiv.innerHTML = "";
+        originalGrid = [];
+        optimizedGrid = [];
+        skuList = [];
+        nRows = 0;
+        nCols = 0;
+        processBtn.disabled = true;
+      });
+
+      function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = "block";
       }
 
-      function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target.result.trim();
-          parseCSV(text);
-        };
-        reader.readAsText(file);
-      }
+      // --- Core Logic ---
 
       function parseCSV(text) {
-        const lines = text
-          .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0);
-        frequencyGrid = lines.map((line) => {
-          return line.split(",").map((s) => {
-            const num = parseFloat(s);
-            return isNaN(num) ? 0 : num;
-          });
-        });
-
-        rows = frequencyGrid.length;
-        cols = frequencyGrid[0]?.length || 0;
-
-        // Validate grid consistency
-        for (const row of frequencyGrid) {
-          if (row.length !== cols) {
-            errorMsg.textContent =
-              "Error: CSV rows have inconsistent number of columns.";
-            processBtn.disabled = true;
-            return;
-          }
-        }
-
-        errorMsg.textContent = "";
-        processBtn.disabled = false;
-        visualization.innerHTML = "";
-        resultsBody.innerHTML = "";
-        summaryStats.innerHTML = "";
-        resultsTable.style.display = "none";
-      }
-
-      function parseCoordinates(input) {
-        return input
-          .split(";")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0)
-          .map((coord) => {
-            const [r, c] = coord.split(",").map((x) => parseInt(x.trim(), 10));
-            return [r, c];
-          });
-      }
-
-      function processSlotting() {
-        errorMsg.textContent = "";
-
-        // Parse dock location
-        const dockStr = dockInput.value.trim();
-        const dockCoords = dockStr
+        // Split lines and filter out empty or whitespace-only lines
+        let lines = text
+          .trim()
+          .split(/\r?\n/)
+          .filter((line) => line.trim().length > 0);
+        if (lines.length === 0) throw new Error("CSV is empty.");
+        // Remove header row if present (assume header if any cell is not a number)
+        let dataLines = lines;
+        const firstData = lines[0]
           .split(",")
-          .map((x) => parseInt(x.trim(), 10));
-        if (dockCoords.length !== 2 || dockCoords.some(isNaN)) {
-          errorMsg.textContent = "Dock location must be in format row,col";
-          return;
+          .slice(1)
+          .map((x) => x.trim());
+        if (firstData.some((x) => isNaN(parseInt(x)))) {
+          dataLines = lines.slice(1);
         }
-        if (
-          dockCoords[0] < 0 ||
-          dockCoords[0] >= rows ||
-          dockCoords[1] < 0 ||
-          dockCoords[1] >= cols
-        ) {
-          errorMsg.textContent = "Dock location out of bounds";
-          return;
+        // Parse rows, skipping empty rows or rows with all empty cells
+        let grid = [];
+        for (let row of dataLines) {
+          let cells = row.split(",").map((x) => x.trim());
+          // Remove row label if present (first cell non-numeric)
+          if (isNaN(parseInt(cells[0]))) cells = cells.slice(1);
+          // Filter out empty cells at end
+          cells = cells.filter((x) => x.length > 0);
+          // If all cells are empty, skip row
+          if (cells.length === 0) continue;
+          // Parse numbers
+          let nums = cells.map((x) => parseInt(x));
+          if (nums.some(isNaN)) continue;
+          grid.push(nums);
         }
-        dockLocation = dockCoords;
+        // Remove any rows that are shorter than the first row
+        const width = grid[0]?.length || 0;
+        grid = grid.filter((row) => row.length === width);
+        if (!grid.length || grid.some((row) => row.length !== width))
+          throw new Error("CSV must be a complete grid of numbers.");
+        return grid;
+      }
 
-        // Parse obstacles
-        obstacles = [];
-        if (obstacleInput.value.trim() !== "") {
-          obstacles = parseCoordinates(obstacleInput.value);
-          for (const [r, c] of obstacles) {
-            if (r < 0 || r >= rows || c < 0 || c >= cols) {
-              errorMsg.textContent = "One or more obstacles are out of bounds";
-              return;
-            }
-          }
-        }
+      function parseLoc(str) {
+        const [row, col] = str.split(",").map((x) => parseInt(x.trim()));
+        if (isNaN(row) || isNaN(col)) throw new Error("Invalid dock location.");
+        return { row, col };
+      }
 
-        // Get thresholds and validate
-        const AThreshold = Number(classASlider.value);
-        const BThreshold = Number(classBSlider.value);
+      function parseObstacles(str) {
+        if (!str.trim()) return [];
+        return str.split(";").map((s) => {
+          const [row, col] = s.split(",").map((x) => parseInt(x.trim()));
+          if (isNaN(row) || isNaN(col))
+            throw new Error("Invalid obstacle location.");
+          return { row, col };
+        });
+      }
 
-        if (AThreshold + BThreshold > 100) {
-          errorMsg.textContent =
-            "Class A + Class B thresholds cannot exceed 100%";
-          return;
-        }
-
-        // Flatten grid to SKU list
-        let skus = [];
-        let skuCount = 0;
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            skus.push({
-              sku: `SKU${skuCount}`,
-              row: r,
-              col: c,
-              freq: frequencyGrid[r][c],
+      function flattenGrid(grid) {
+        let out = [];
+        let idx = 0;
+        for (let r = 0; r < grid.length; ++r) {
+          for (let c = 0; c < grid[0].length; ++c) {
+            out.push({
+              sku: idx,
+              frequency: grid[r][c],
+              origRow: r,
+              origCol: c,
+              class: "C", // default
+              assigned: false,
+              newRow: null,
+              newCol: null,
             });
-            skuCount++;
+            idx++;
           }
         }
+        return out;
+      }
 
-        // Remove obstacle SKUs (treat as unavailable)
-        skus = skus.filter(
-          (sku) =>
-            !obstacles.some(([or, oc]) => or === sku.row && oc === sku.col)
+      function classifyABC(skus, classA, classB) {
+        // Pareto sort
+        const total = skus.reduce((a, b) => a + b.frequency, 0);
+        skus.sort((a, b) => b.frequency - a.frequency);
+        let cum = 0;
+        for (let i = 0; i < skus.length; ++i) {
+          cum += skus[i].frequency;
+          const pct = (100 * cum) / total;
+          if (pct <= classA) skus[i].class = "A";
+          else if (pct <= classA + classB) skus[i].class = "B";
+          else skus[i].class = "C";
+        }
+      }
+
+      function manhattan(r1, c1, r2, c2) {
+        return Math.abs(r1 - r2) + Math.abs(c1 - c2);
+      }
+
+      function isObstacleCell(r, c, obsArr) {
+        return obsArr.some((o) => o.row === r && o.col === c);
+      }
+
+      function runOptimization() {
+        // 1. Flatten
+        skuList = flattenGrid(originalGrid);
+        // 2. Classify
+        classifyABC(
+          skuList,
+          parseInt(classASlider.value),
+          parseInt(classBSlider.value)
         );
-
-        // Sort SKUs descending by frequency
-        skus.sort((a, b) => b.freq - a.freq);
-
-        // Calculate cumulative % for Paretto
-        const totalFreq = skus.reduce((acc, s) => acc + s.freq, 0);
-        let cumFreq = 0;
-        skus.forEach((sku) => {
-          cumFreq += sku.freq;
-          sku.cumPct = totalFreq ? (cumFreq / totalFreq) * 100 : 0;
+        // 3. Assign SKUs to closest slots by ABC
+        // Build list of all available slots
+        let slots = [];
+        for (let r = 0; r < nRows; ++r) {
+          for (let c = 0; c < nCols; ++c) {
+            if (!isObstacleCell(r, c, obstacles))
+              slots.push({ row: r, col: c });
+          }
+        }
+        // 4. Sort slots by distance to dock (closest first)
+        slots.sort(
+          (a, b) =>
+            manhattan(a.row, a.col, dockLoc.row, dockLoc.col) -
+            manhattan(b.row, b.col, dockLoc.row, dockLoc.col)
+        );
+        // 5. Assign A, then B, then C
+        let skusA = skuList.filter((s) => s.class === "A");
+        let skusB = skuList.filter((s) => s.class === "B");
+        let skusC = skuList.filter((s) => s.class === "C");
+        let assignOrder = [...skusA, ...skusB, ...skusC];
+        let slotIdx = 0;
+        assignOrder.forEach((sku) => {
+          while (
+            slotIdx < slots.length &&
+            optimizedGrid &&
+            optimizedGrid[slots[slotIdx].row] &&
+            optimizedGrid[slots[slotIdx].row][slots[slotIdx].col]
+          ) {
+            slotIdx++;
+          }
+          if (slotIdx < slots.length) {
+            sku.newRow = slots[slotIdx].row;
+            sku.newCol = slots[slotIdx].col;
+            slotIdx++;
+          }
         });
-
-        // Assign classes by cumulative %
-        skus.forEach((sku) => {
-          if (sku.cumPct <= AThreshold) sku.class = "A";
-          else if (sku.cumPct <= AThreshold + BThreshold) sku.class = "B";
-          else sku.class = "C";
+        // 6. Build optimized grid
+        optimizedGrid = [];
+        for (let r = 0; r < nRows; ++r) {
+          optimizedGrid[r] = [];
+          for (let c = 0; c < nCols; ++c) {
+            optimizedGrid[r][c] = null;
+          }
+        }
+        skuList.forEach((sku) => {
+          if (sku.newRow !== null && sku.newCol !== null)
+            optimizedGrid[sku.newRow][sku.newCol] = sku;
         });
-
-        // Assign slots (naive assignment here: A slots closer to dock, C farthest)
-        // Calculate Manhattan distance from dock for each position
-        skus.forEach((sku) => {
-          sku.distFromDock =
-            Math.abs(sku.row - dockLocation[0]) +
-            Math.abs(sku.col - dockLocation[1]);
-        });
-
-        // Sort SKUs by class priority and assign slots (just to keep order)
-        // For demo: we keep original positions but highlight classes.
-
-        renderGrid(skus);
-        renderResults(skus, totalFreq);
+        // 7. Visualize both
+        visualizeGrid(
+          originalGrid,
+          visualizationBefore,
+          skuList,
+          obstacles,
+          true
+        );
+        visualizeGrid(
+          optimizedGrid,
+          visualizationAfter,
+          skuList,
+          obstacles,
+          false
+        );
+        vizContainer.style.display = "grid";
+        legend.style.display = "flex";
+        // 8. Show metrics and explanations
+        showMetricsAndExplanations();
       }
 
-      function renderGrid(skus) {
-        visualization.innerHTML = "";
-
-        visualization.style.gridTemplateRows = `repeat(${rows}, 40px)`;
-        visualization.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
-
-        // Build quick lookup by position
-        const skuMap = new Map();
-        for (const sku of skus) {
-          skuMap.set(`${sku.row},${sku.col}`, sku);
-        }
-
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const cell = document.createElement("div");
-            cell.classList.add("cell");
-
-            // Dock cell
-            if (r === dockLocation[0] && c === dockLocation[1]) {
-              cell.classList.add("dock-cell");
-              cell.textContent = "Dock";
-              visualization.appendChild(cell);
-              continue;
+      function visualizeGrid(
+        grid,
+        container,
+        skuList,
+        obstaclesArr,
+        isOriginal
+      ) {
+        container.innerHTML = "";
+        let rows = grid.length,
+          cols = grid[0].length;
+        container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        for (let r = 0; r < rows; ++r) {
+          for (let c = 0; c < cols; ++c) {
+            let cellDiv = document.createElement("div");
+            cellDiv.className = "cell";
+            // Dock
+            if (r === dockLoc.row && c === dockLoc.col)
+              cellDiv.classList.add("dock-cell");
+            // Obstacle
+            else if (isObstacleCell(r, c, obstaclesArr))
+              cellDiv.classList.add("obstacle-cell");
+            // SKU (for optimized grid, show class color)
+            else if (
+              grid[r][c] &&
+              typeof grid[r][c] === "object" &&
+              grid[r][c].class
+            ) {
+              cellDiv.classList.add("class-" + grid[r][c].class);
             }
-
-            // Obstacle cell
-            if (obstacles.some(([or, oc]) => or === r && oc === c)) {
-              cell.classList.add("obstacle-cell");
-              cell.textContent = "X";
-              visualization.appendChild(cell);
-              continue;
+            // For original grid, color by ABC if possible
+            else if (isOriginal && skuList) {
+              let sku = skuList.find((s) => s.origRow === r && s.origCol === c);
+              if (sku) cellDiv.classList.add("class-" + sku.class);
             }
-
-            const sku = skuMap.get(`${r},${c}`);
-
-            if (sku) {
-              // Add class-based styling
-              if (sku.class === "A") cell.classList.add("class-A");
-              else if (sku.class === "B") cell.classList.add("class-B");
-              else cell.classList.add("class-C");
-
-              cell.textContent = sku.sku;
-
-              // Tooltip with details
-              const tip = document.createElement("span");
-              tip.className = "tooltip";
-              tip.textContent = `Freq: ${sku.freq} | Class: ${sku.class} | Pos: (${sku.row},${sku.col})`;
-              cell.appendChild(tip);
-            } else {
-              cell.textContent = "";
-            }
-
-            visualization.appendChild(cell);
+            // Label
+            let label = "";
+            if (isObstacleCell(r, c, obstaclesArr)) label = "X";
+            else if (r === dockLoc.row && c === dockLoc.col) label = "Dock";
+            else if (
+              grid[r][c] &&
+              typeof grid[r][c] === "object" &&
+              grid[r][c].sku !== undefined
+            )
+              label = "SKU" + grid[r][c].sku;
+            else label = isOriginal ? "SKU" + (r * cols + c) : "";
+            cellDiv.textContent = label;
+            container.appendChild(cellDiv);
           }
         }
       }
 
-      function renderResults(skus, totalFreq) {
-        resultsBody.innerHTML = "";
-        const counts = { A: 0, B: 0, C: 0 };
-        let freqA = 0,
-          freqB = 0,
-          freqC = 0;
-
-        skus.forEach((sku) => {
-          const tr = document.createElement("tr");
-
-          const tdSKU = document.createElement("td");
-          tdSKU.textContent = sku.sku;
-          tr.appendChild(tdSKU);
-
-          const tdPos = document.createElement("td");
-          tdPos.textContent = `(${sku.row},${sku.col})`;
-          tr.appendChild(tdPos);
-
-          const tdFreq = document.createElement("td");
-          tdFreq.textContent = sku.freq;
-          tr.appendChild(tdFreq);
-
-          const tdClass = document.createElement("td");
-          tdClass.textContent = sku.class;
-          tr.appendChild(tdClass);
-
-          resultsBody.appendChild(tr);
-
-          counts[sku.class]++;
-          if (sku.class === "A") freqA += sku.freq;
-          else if (sku.class === "B") freqB += sku.freq;
-          else freqC += sku.freq;
+      function showMetricsAndExplanations() {
+        // Calculate travel distances
+        let origDist = 0,
+          optDist = 0;
+        let explanations = [];
+        skuList.forEach((sku) => {
+          let origD = manhattan(
+            sku.origRow,
+            sku.origCol,
+            dockLoc.row,
+            dockLoc.col
+          );
+          let optD =
+            sku.newRow !== null && sku.newCol !== null
+              ? manhattan(sku.newRow, sku.newCol, dockLoc.row, dockLoc.col)
+              : 0;
+          origDist += sku.frequency * origD;
+          optDist += sku.frequency * optD;
+          explanations.push(
+            `<div><b>SKU${sku.sku}:</b> <span>Class ${sku.class}, Freq ${sku.frequency}. ` +
+              `From (${sku.origRow},${sku.origCol}) → (${sku.newRow},${sku.newCol}). ` +
+              `Distance: ${origD} → ${optD}.</span></div>`
+          );
         });
-
-        resultsTable.style.display = "table";
-
-        summaryStats.innerHTML = `
-      <span>Class A: ${counts.A} SKUs (${((freqA / totalFreq) * 100).toFixed(
-          1
-        )}% freq)</span>
-      <span>Class B: ${counts.B} SKUs (${((freqB / totalFreq) * 100).toFixed(
-          1
-        )}% freq)</span>
-      <span>Class C: ${counts.C} SKUs (${((freqC / totalFreq) * 100).toFixed(
-          1
-        )}% freq)</span>
-      <span>Total SKUs: ${skus.length}</span>
-    `;
+        let improvement = origDist
+          ? (((origDist - optDist) / origDist) * 100).toFixed(2)
+          : "0.00";
+        metricsGrid.innerHTML = `<div class="metric-card"><div class="metric-value">${origDist}</div><div class="metric-label">Original Travel Distance</div></div>
+         <div class="metric-card"><div class="metric-value">${optDist}</div><div class="metric-label">Optimized Travel Distance</div></div>
+         <div class="metric-card"><div class="metric-value ${
+           improvement >= 0 ? "improvement" : "improvement negative"
+         }">${improvement}%</div><div class="metric-label">Total Improvement</div></div>`;
+        explanationsDiv.innerHTML = explanations.join("");
+        resultsSection.style.display = "block";
       }
     </script>
   </body>
